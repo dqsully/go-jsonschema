@@ -230,7 +230,8 @@ func (p PointerType) Generate(out *Emitter) {
 }
 
 type ArrayType struct {
-	Type Type
+	PrefixTypes []Type
+	Type        Type
 }
 
 func (ArrayType) IsNillable() bool { return true }

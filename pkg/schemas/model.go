@@ -121,7 +121,8 @@ type Type struct {
 	MinLength            int              `json:"minLength,omitempty"`            // Section 5.7.
 	Pattern              string           `json:"pattern,omitempty"`              // Section 5.8.
 	AdditionalItems      *Type            `json:"additionalItems,omitempty"`      // Section 5.9.
-	Items                *Type            `json:"items,omitempty"`                // Section 5.9.
+	PrefixItems          []*Type          `json:"prefixItems,omitempty"`          // Section 10.3.1.1. Added in draft 2020-12
+	Items                *Type            `json:"items,omitempty"`                // Section 10.3.1.2. Changed in draft 2020-12
 	MaxItems             int              `json:"maxItems,omitempty"`             // Section 5.10.
 	MinItems             int              `json:"minItems,omitempty"`             // Section 5.11.
 	UniqueItems          bool             `json:"uniqueItems,omitempty"`          // Section 5.12.

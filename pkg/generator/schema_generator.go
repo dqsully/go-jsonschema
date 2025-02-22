@@ -428,16 +428,33 @@ func (g *schemaGenerator) generateType(
 
 	switch t.Type[typeIndex] {
 	case schemas.TypeNameArray:
+		var at codegen.ArrayType
+
 		if t.Items == nil {
-			return nil, errArrayPropertyItems
+			at.Type = codegen.EmptyInterfaceType{}
+		} else {
+			elemType, err := g.generateType(t.Items, scope.add("Elem"))
+			if err != nil {
+				return nil, err
+			}
+			at.Type = elemType
 		}
 
-		elemType, err := g.generateType(t.Items, scope.add("Elem"))
-		if err != nil {
-			return nil, err
+		if t.PrefixItems != nil {
+			types := []codegen.Type{}
+
+			for i, item := range t.PrefixItems {
+				elemType, err := g.generateType(item, scope.add("Elem"+fmt.Sprint(i)))
+				if err != nil {
+					return nil, err
+				}
+				types = append(types, elemType)
+			}
+
+			at.PrefixTypes = types
 		}
 
-		return codegen.ArrayType{Type: elemType}, nil
+		return at, nil
 
 	case schemas.TypeNameObject:
 		return g.generateStructType(t, scope)
@@ -757,7 +774,19 @@ func (g *schemaGenerator) generateTypeInline(
 		}
 
 		if t.Type[typeIndex] == schemas.TypeNameArray {
+			var prefixTypes []codegen.Type
 			var theType codegen.Type
+
+			if t.PrefixItems != nil {
+
+				for i, item := range t.PrefixItems {
+					elemType, err := g.generateTypeInline(item, scope.add("Elem"+fmt.Sprint(i)))
+					if err != nil {
+						return nil, err
+					}
+					prefixTypes = append(prefixTypes, elemType)
+				}
+			}
 
 			if t.Items == nil {
 				theType = codegen.EmptyInterfaceType{}
@@ -770,7 +799,7 @@ func (g *schemaGenerator) generateTypeInline(
 				}
 			}
 
-			return &codegen.ArrayType{Type: theType}, nil
+			return &codegen.ArrayType{Type: theType, PrefixTypes: prefixTypes}, nil
 		}
 	}
 
